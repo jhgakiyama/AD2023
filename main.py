@@ -45,59 +45,68 @@ def armar_diccionario(response):
 
 
 def consultar_cinco_dias(coordenadas):
-    lista = list()
-    lista2 = list()
+    """
+    Recibe como parametro la lista de coordenadas
+    Devuelve una lista para este ejemplo con 400 elementos.
+    40 pronosticos por 10 ciudades
+    """
+    lista_pronosticos = list()
     pos = 1
     for coordenada in coordenadas:
         url = BASE_URL + f"{coordenada}&appid={utils.API}"
         response = requests.get(url)
 
         if response.status_code == 200:
-
             print(f"{pos} - Coordenas OK: {coordenada}")
             response_json = response.json()
-            lista = armar_diccionario(response_json)
+            lista_ciudad = armar_diccionario(response_json)
         else:
             print(f"Error codigo {response.status_code}")
             print(f"NO existe ciudad para la coordenada {coordenada}")
         pos += 1
-        lista2.extend(lista)
-    return lista2
+        lista_pronosticos.extend(lista_ciudad)
+    return lista_pronosticos
 
 
-def generar_csv(file_csv):
+def generar_df(lista_ciudades):
     """
-    Genero el csv a partir de la lista de coordenadas
+    Genero el dataframe a partir de la lista de coordenadas
     """
 
-    pronosticos = consultar_cinco_dias(utils.coordList)
+    pronosticos = consultar_cinco_dias(lista_ciudades)
 
-    df = pd.DataFrame(pronosticos)
-    
+    # Obtengo un dataframe con todas los pronosticos de todas las ciudades
+    df = pd.DataFrame(pronosticos) 
+
     # Agrego las columnas de hora y fecha
-    df['hora'] = pd.to_datetime(pd.to_datetime(df['dt'], unit='s'), format="%H:%M:%S").dt.time
     df['fecha'] = pd.to_datetime(df['dt'], unit='s').dt.date
-    # print(df.to_string(index=False))
-    df.to_csv(file_csv, index=False, encoding='utf-8')
-    
+    df['hora'] = pd.to_datetime(pd.to_datetime(df['dt'], unit='s'), format="%H:%M:%S").dt.time
+    return df
+
+
+def generar_csv(df):
+    """
+    Genero el archivo csv a partir del dataframe
+    el formato del csv es tiempodiario_20230711.csv 
+    """
+    dias = obtener_dias(df,"fecha") # obtengo los dias para poder armar los csv
+
+    for dia in dias:
+        dia_str = dia.strftime('%Y%m%d')
+        file_csv = f"tiempodiario_{dia_str}.csv"
+        df_fecha = df[df.fecha == dia]
+        df_fecha.sort_values(by=["ciudad","hora"], inplace=False) 
+        df_fecha.to_csv(file_csv, index=False, encoding='utf-8')
+
 
 def obtener_dias(dataframe, grupo):
     df_grupo = dataframe.groupby(grupo)
-    # df_grupo = dataframe.groupby(grupo).size() --> es como hacer un group by y agregar un count ()
-    # print(df_grupo.first())
-    # print(df_grupo)
     datetimes = [key for key, value in df_grupo]
-
-    dias_str = list()
-    for dia in datetimes:
-        dias_str.append(dia.strftime('%Y%m%d'))
-
-    return dias_str
-    # for name_of_group, contents_of_group in df_grupo:
-    #     print(name_of_group)
-    #     print(contents_of_group)
+    return datetimes
 
 
 if __name__ == "__main__":
-    archivo = "pron_por_cinco_coord.csv"
-    generar_csv(archivo)
+    #ciudades = utils.rcia  
+    ciudades = utils.coordList
+    dataframe = generar_df(ciudades)
+    generar_csv(dataframe)
