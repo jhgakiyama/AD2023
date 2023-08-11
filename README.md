@@ -2,7 +2,7 @@
 
 ## Desafio Nivel Inicial
 
-### Se consulta la api forecast5 de 'openweathermap'. La cual me da el pronostico de 5 dias cada 3 horas
+### Se consulta la api forecast5 de 'openweathermap'. La cual me da el pronostico de una ciudad para 5 dias cada 3 horas
 ### Se genera un solo DataFrame con todos los pronosticos. Al final se genera un archivo csv por dia. Dentro de cada archivo se encuentran los pronosticos de todas las ciudades. Ordenados por Ciudad y hora.
 
 Clonar el proyecto:
