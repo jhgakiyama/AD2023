@@ -19,3 +19,5 @@ Instalar los requirements
 
 Para ejecutar el script
 `python main.py`
+
+Se crean los archivos csv en el directorio '/data_analytics/openweather/'
