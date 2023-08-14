@@ -89,22 +89,23 @@ def generar_csv(df):
     Genero el archivo csv a partir del dataframe
     el formato del csv es tiempodiario_20230711.csv 
     """
-    dias = obtener_dias(df,"fecha") # obtengo los dias para poder armar los csv
+    dias = obtener_dias(df, "fecha")  # obtengo los dias para poder armar los csv
     directorio_csv = 'data_analytics/openweather/'
 
     for dia in dias:
         dia_str = dia.strftime('%Y%m%d')
         file_csv = f"tiempodiario_{dia_str}.csv"
         df_fecha = df[df.fecha == dia]
-        df_fecha.sort_values(by=["ciudad","hora"], inplace=False)
+        df_fecha.sort_values(by=["ciudad", "hora"], inplace=False)
         try: 
             print(f"Se va a crear el archivo >> {file_csv}")
             df_fecha.to_csv(directorio_csv + file_csv, index=False, encoding='utf-8')
         except FileNotFoundError:
-            print("Error. NO existe el directorio")
+            print(f"Error. NO existe el directorio '{directorio_csv}'")
             try:
-                print("Creando directorio")
+                print(f"Creando '{directorio_csv}'")
                 os.makedirs(directorio_csv)
+                print(f"Se va a crear el archivo >> '{file_csv}'")
                 df_fecha.to_csv(directorio_csv + file_csv, index=False, encoding='utf-8')
             except Exception as e:
                 print(f"Error al crear el direcotrio >> {e}")
@@ -112,8 +113,8 @@ def generar_csv(df):
             print(f"Error >> {e}")
 
 
-def obtener_dias(dataframe, grupo):
-    df_grupo = dataframe.groupby(grupo)
+def obtener_dias(df, grupo):
+    df_grupo = df.groupby(grupo)
     datetimes = [key for key, value in df_grupo]
     return datetimes
 
