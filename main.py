@@ -8,7 +8,7 @@ maximo es 8 por dia ,y como son supuestamente 5 dias , 40 es el maximo valor pos
 puede traer 6 dias tomando el dia actual pocos valores y el ultimo dias con menos de 8
 """
 
-
+import os
 import requests
 import pandas as pd
 import utils
@@ -90,13 +90,26 @@ def generar_csv(df):
     el formato del csv es tiempodiario_20230711.csv 
     """
     dias = obtener_dias(df,"fecha") # obtengo los dias para poder armar los csv
+    directorio_csv = 'data_analytics/openweather/'
 
     for dia in dias:
         dia_str = dia.strftime('%Y%m%d')
         file_csv = f"tiempodiario_{dia_str}.csv"
         df_fecha = df[df.fecha == dia]
-        df_fecha.sort_values(by=["ciudad","hora"], inplace=False) 
-        df_fecha.to_csv(file_csv, index=False, encoding='utf-8')
+        df_fecha.sort_values(by=["ciudad","hora"], inplace=False)
+        try: 
+            print(f"Se va a crear el archivo >> {file_csv}")
+            df_fecha.to_csv(directorio_csv + file_csv, index=False, encoding='utf-8')
+        except FileNotFoundError:
+            print("Error. NO existe el directorio")
+            try:
+                print("Creando directorio")
+                os.makedirs(directorio_csv)
+                df_fecha.to_csv(directorio_csv + file_csv, index=False, encoding='utf-8')
+            except Exception as e:
+                print(f"Error al crear el direcotrio >> {e}")
+        except Exception as e:
+            print(f"Error >> {e}")
 
 
 def obtener_dias(dataframe, grupo):
@@ -106,7 +119,7 @@ def obtener_dias(dataframe, grupo):
 
 
 if __name__ == "__main__":
-    #ciudades = utils.rcia  
-    ciudades = utils.coordList
+    ciudades = utils.rcia  
     dataframe = generar_df(ciudades)
     generar_csv(dataframe)
+    ciudades = utils.coordList
